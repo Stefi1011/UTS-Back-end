@@ -1,11 +1,16 @@
 const { User } = require('../../../models');
+const { name } = require('../../../models/users-schema');
 
 /**
  * Get a list of users
+ * @param {number} skip - Number of documents to skip
+ * @param {number} batas - Limit of documents to return
+ * @param {string} search - Search keyword
+ * @param {string} sort - sort field and order
  * @returns {Promise}
  */
-async function getUsers() {
-  return User.find({});
+async function getUsers(skip, batas, searchQuery, sortOptions) {
+  return User.find(searchQuery).skip(skip).limit(batas).sort(sortOptions);
 }
 
 /**
@@ -81,6 +86,14 @@ async function changePassword(id, password) {
   return User.updateOne({ _id: id }, { $set: { password } });
 }
 
+/**
+ * Count user
+ * @returns {Promise}
+ */
+async function countUsers(searchQuery) {
+  return count = User.countDocuments(searchQuery);
+}
+
 module.exports = {
   getUsers,
   getUser,
@@ -89,4 +102,5 @@ module.exports = {
   deleteUser,
   getUserByEmail,
   changePassword,
+  countUsers,
 };

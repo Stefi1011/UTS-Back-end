@@ -1,5 +1,6 @@
 const usersService = require('./users-service');
 const { errorResponder, errorTypes } = require('../../../core/errors');
+const { countUsers } = require('./users-repository');
 
 /**
  * Handle get list of users request
@@ -10,8 +11,35 @@ const { errorResponder, errorTypes } = require('../../../core/errors');
  */
 async function getUsers(request, response, next) {
   try {
-    const users = await usersService.getUsers();
-    return response.status(200).json(users);
+    // mendapatkan jumlah user sesuai search
+
+    const search = request.query.search;
+    const count = await usersService.countUsers(search);
+    const sort = request.query.sort;
+    const page_number = parseInt(request.query.page_number) || 1;
+    const page_size = parseInt(request.query.page_size) || count;
+    
+    // mendapatkan data user sesuai permintaan (pagination, sort, dan search)
+    const  users  = await usersService.getUsers(
+      page_number,
+      page_size,
+      search,
+      sort
+    );
+
+    
+    const total_pages = Math.ceil(count / page_size);
+    const has_previous_page = page_number > 1;
+    const has_next_page = page_number < total_pages;
+    return response.status(200).json({
+      page_number,
+      page_size,
+      count,
+      total_pages,
+      has_previous_page,
+      has_next_page,
+      data: users,
+    });
   } catch (error) {
     return next(error);
   }

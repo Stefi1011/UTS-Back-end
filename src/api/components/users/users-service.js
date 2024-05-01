@@ -2,12 +2,73 @@ const usersRepository = require('./users-repository');
 const { hashPassword, passwordMatched } = require('../../../utils/password');
 
 /**
- * Get list of users
+ * Get list of users (+pagination)
+ * @param {number} pageNumber - Page number
+ * @param {number} pageSize -  Page size
+ * @param {string} search - Search
+ * @param {string} sort - Sortiing (asc and desc)
  * @returns {Array}
  */
-async function getUsers() {
-  const users = await usersRepository.getUsers();
+async function getUsers(pageNumber, pageSize, search, sort) {
+  // hitung skip untuk melewatkan data dan batas untuk pagination
+  const skip = (pageNumber - 1) * pageSize;
+  const batas = pageSize;
 
+  let searchField = null;
+  let searchKey = '';
+
+  // memisahkan searchField dan searchKey jika search diisi sesuai ketentuan
+  if (search && search.includes(':')) {
+    [searchField, searchKey] = search.split(':');
+  }
+
+  let searchQuery = {};
+
+  // mencari data berdasarkan search
+  if (searchField === 'name' || searchField === 'email') {
+    searchQuery[searchField] = { $regex: searchKey, $options: 'i' };
+  }
+
+  let sortField = null;
+  let sortKey = '';
+
+  // membuat default bagi sort apabila user tidak request sort
+  if (!sort) {
+    sort = 'email: asc';
+  }
+
+  // memisahkan sortField dan sortKey
+  if (sort && sort.includes(':')) {
+    [sortField, sortKey] = sort.split(':');
+  }
+
+  let sortOptions = {};
+
+  // membuat default jika user salah format
+  if (!(sortField === 'name' || sortField === 'email')) {
+    sortField = 'email';
+    sortKey = 'asc';
+  }
+
+  sortOptions[sortField] = sortKey === 'desc' ? -1 : 1;
+  if (sortField === 'name' || sortField === 'email') {
+    sortOptions[sortField] = sortKey === 'desc' ? -1 : 1;
+  } else {
+    (sortOptions[sortField] = sortField === 'email'),
+      sortKey === 'desc' ? -1 : 1;
+  }
+
+  // cari users
+  const users = await usersRepository.getUsers(
+    skip,
+    batas,
+    searchQuery,
+    sortOptions
+  );
+
+  // cari jumlah users
+  //const count = await usersRepository.countUsers(search);
+ 
   const results = [];
   for (let i = 0; i < users.length; i += 1) {
     const user = users[i];
@@ -161,6 +222,34 @@ async function changePassword(userId, password) {
   return true;
 }
 
+/**
+ * Count total user
+ * @param {string} search - Key to search
+ * @returns {boolean}
+ */
+async function countUsers(search) {
+  let searchField = null;
+  let searchKey = '';
+
+  // memisahkan searchField dan searchKey jika search diisi sesuai ketentuan
+  if (search && search.includes(':')) {
+    [searchField, searchKey] = search.split(':');
+  }
+
+  let searchQuery = {};
+
+  // mencari data berdasarkan search
+  if (searchField === 'name' || searchField === 'email') {
+    searchQuery[searchField] = { $regex: searchKey, $options: 'i' };
+  }
+
+  const count = await usersRepository.countUsers(search);
+  return count;
+}
+
+// async function getTotalPages(count, pageSize){
+//   return usersRepository
+// }
 module.exports = {
   getUsers,
   getUser,
@@ -170,4 +259,5 @@ module.exports = {
   emailIsRegistered,
   checkPassword,
   changePassword,
+  countUsers,
 };

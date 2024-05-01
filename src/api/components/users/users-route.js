@@ -13,6 +13,7 @@ module.exports = (app) => {
   // Get list of users
   route.get('/', authenticationMiddleware, usersControllers.getUsers);
 
+  
   // Create user
   route.post(
     '/',
