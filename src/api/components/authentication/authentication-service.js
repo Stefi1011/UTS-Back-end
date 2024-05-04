@@ -33,6 +33,60 @@ async function checkLoginCredentials(email, password) {
   return null;
 }
 
+/**
+ * Get failedLoginAttempt information by email
+ * @param {string} email - Email
+ * @returns {object} An object containing email, timestamp and total of failedLoginAttempts. Otherwise returns null.
+ */
+async function getFailedLoginAttempt(email) {
+  return authenticationRepository.getFailedLoginAttempt(email);
+}
+
+/**
+ * Get failedLoginAttempt information by email
+ * @param {number} limitTime - Email
+ * @param {Date} lastFailedAttemptTime - The last time login attempt failed 
+ * @returns {boolean} Resolves true if the current time exceeds the limit time. Otherwise false.
+ */
+async function checkLimitTime(limitTime, lastFailedAttemptTime) {
+  const currentTime = new Date();
+  return (currentTime - lastFailedAttemptTime) > limitTime;
+}
+
+/**
+ * Reset failedLoginAttempt information by email
+ * @param {string} email - Email
+ * @returns {boolean} 
+ */
+async function resetFailedLoginAttempt(email) {
+  return authenticationRepository.resetFailedLoginAttempt(email);
+}
+
+/**
+ * Increase the count of failed login attempts by email. If no record exists, create a new record.
+ * @param {string} email - Email
+ * @returns {boolean} 
+ */
+async function incrementFailedLoginAttempt(email) {
+  const failedAttempt =
+    await authenticationRepository.getFailedLoginAttempt(email);
+
+  if (failedAttempt) {
+    await authenticationRepository.updateFailedLoginAttempt(failedAttempt);
+  } else {
+    const newAttempt = {
+      email: email,
+      totalFailedAttempts: 1,
+      timestamp: new Date(),
+    };
+    await authenticationRepository.createFailedLoginAttempt(newAttempt);
+  }
+}
+
 module.exports = {
   checkLoginCredentials,
+  getFailedLoginAttempt,
+  checkLimitTime,
+  resetFailedLoginAttempt,
+  incrementFailedLoginAttempt,
 };

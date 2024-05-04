@@ -68,7 +68,7 @@ async function getUsers(pageNumber, pageSize, search, sort) {
 
   // cari jumlah users
   //const count = await usersRepository.countUsers(search);
- 
+
   const results = [];
   for (let i = 0; i < users.length; i += 1) {
     const user = users[i];
@@ -243,7 +243,7 @@ async function countUsers(search) {
     searchQuery[searchField] = { $regex: searchKey, $options: 'i' };
   }
 
-  const count = await usersRepository.countUsers(search);
+  const count = await usersRepository.countUsers(searchQuery);
   return count;
 }
 
