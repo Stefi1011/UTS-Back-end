@@ -1,5 +1,12 @@
 const usersRepository = require('./users-repository');
-const { hashPassword, passwordMatched } = require('../../../utils/password');
+const bankingRepository = require('../banking/banking-repository');
+const bankingService = require('../banking/banking-service');
+const {
+  hashPassword,
+  hashPin,
+  passwordMatched,
+} = require('../../../utils/password');
+const { account_number } = require('../../../models/accounts-schema');
 
 /**
  * Get list of users (+pagination)
@@ -109,12 +116,17 @@ async function getUser(id) {
  * @param {string} password - Password
  * @returns {boolean}
  */
-async function createUser(name, email, password) {
+async function createUser(name, email, password, pin, account_number) {
   // Hash password
   const hashedPassword = await hashPassword(password);
 
+  // hash pin
+  const hashedPin = await hashPin(pin);
+
+ 
   try {
     await usersRepository.createUser(name, email, hashedPassword);
+    await bankingRepository.createAccount(account_number, name, hashedPin);
   } catch (err) {
     return null;
   }
@@ -247,9 +259,6 @@ async function countUsers(search) {
   return count;
 }
 
-// async function getTotalPages(count, pageSize){
-//   return usersRepository
-// }
 module.exports = {
   getUsers,
   getUser,

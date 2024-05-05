@@ -33,8 +33,7 @@ async function resetFailedLoginAttempt(email) {
  * @returns {Promise}
  */
 async function createFailedLoginAttempt(failedAttempt) {
-  const newFailedAttempt = new FailedLoginAttempt(failedAttempt);
-  return newFailedAttempt.save();
+  return FailedLoginAttempt.create(failedAttempt);
 }
 
 /**

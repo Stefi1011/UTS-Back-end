@@ -20,6 +20,13 @@ module.exports = {
         .required()
         .label('Password'),
       password_confirm: joi.string().required().label('Password confirmation'),
+      pin: joi.number().min(100000).max(999999).required().label('Pin'),
+      pin_confirm: joi
+        .number()
+        .min(100000)
+        .max(999999)
+        .required()
+        .label('Pin_Confirm'),
     },
   },
 

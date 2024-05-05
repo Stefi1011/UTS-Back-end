@@ -1,6 +1,6 @@
 const usersService = require('./users-service');
 const { errorResponder, errorTypes } = require('../../../core/errors');
-const { countUsers } = require('./users-repository');
+const bankingService = require('../banking/banking-service');
 
 /**
  * Handle get list of users request
@@ -18,16 +18,15 @@ async function getUsers(request, response, next) {
     const sort = request.query.sort;
     const page_number = parseInt(request.query.page_number) || 1;
     const page_size = parseInt(request.query.page_size) || count;
-    
+
     // mendapatkan data user sesuai permintaan (pagination, sort, dan search)
-    const  users  = await usersService.getUsers(
+    const users = await usersService.getUsers(
       page_number,
       page_size,
       search,
       sort
     );
 
-    
     const total_pages = Math.ceil(count / page_size);
     const has_previous_page = page_number > 1;
     const has_next_page = page_number < total_pages;
@@ -79,6 +78,8 @@ async function createUser(request, response, next) {
     const email = request.body.email;
     const password = request.body.password;
     const password_confirm = request.body.password_confirm;
+    const pin = request.body.pin;
+    const pin_confirm = request.body.pin_confirm;
 
     // Check confirmation password
     if (password !== password_confirm) {
@@ -88,6 +89,16 @@ async function createUser(request, response, next) {
       );
     }
 
+    // Check confirmation pin
+    if (pin !== pin_confirm) {
+      throw errorResponder(
+        errorTypes.INVALID_PASSWORD,
+        'Pin confirmation mismatched'
+      );
+    }
+
+    // generate account_number
+    const account_number = await bankingService.generateAccountNumber();
     // Email must be unique
     const emailIsRegistered = await usersService.emailIsRegistered(email);
     if (emailIsRegistered) {
@@ -97,7 +108,13 @@ async function createUser(request, response, next) {
       );
     }
 
-    const success = await usersService.createUser(name, email, password);
+    const success = await usersService.createUser(
+      name,
+      email,
+      password,
+      pin,
+      account_number
+    );
     if (!success) {
       throw errorResponder(
         errorTypes.UNPROCESSABLE_ENTITY,
@@ -105,7 +122,7 @@ async function createUser(request, response, next) {
       );
     }
 
-    return response.status(200).json({ name, email });
+    return response.status(200).json({ name, email, account_number });
   } catch (error) {
     return next(error);
   }
