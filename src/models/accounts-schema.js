@@ -1,6 +1,7 @@
 const accountsSchema = {
   account_number: { type: Number, unique: true, required: true },
   full_name: { type: String },
+  email: {type: String},
   balance: { type: Number, default: 0 },
   pin: { type: String },
   mutation: [

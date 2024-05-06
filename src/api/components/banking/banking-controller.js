@@ -51,6 +51,13 @@ const { errorResponder, errorTypes } = require('../../../core/errors');
 //   }
 // }
 
+/**
+ * Handle get balance of account from request
+ * @param {object} request - Express request object
+ * @param {object} response - Express response object
+ * @param {object} next - Express route middlewares
+ * @returns {object} Response object or pass an error to the next route
+ */
 async function getBalance(request, response, next) {
   const account_number = parseInt(request.params.account_number);
   try {
@@ -65,6 +72,13 @@ async function getBalance(request, response, next) {
   }
 }
 
+/**
+ * Handle put in of account from request
+ * @param {object} request - Express request object
+ * @param {object} response - Express response object
+ * @param {object} next - Express route middlewares
+ * @returns {object} Response object or pass an error to the next route
+ */
 async function putIn(request, response, next) {
   const account_number = parseInt(request.body.account_number);
   const amount = parseInt(request.body.amount);
@@ -95,11 +109,19 @@ async function putIn(request, response, next) {
     return next(error);
   }
 }
+
+/**
+ * Handle cash out of account from request
+ * @param {object} request - Express request object
+ * @param {object} response - Express response object
+ * @param {object} next - Express route middlewares
+ * @returns {object} Response object or pass an error to the next route
+ */
 async function cashOut(request, response, next) {
   const account_number = parseInt(request.body.account_number);
   const amount = parseInt(request.body.amount);
   const pin = parseInt(request.body.pin);
-  const balance = bankingService.getBalance(account_number);
+  const balance = await bankingService.getBalance(account_number);
 
   if (!(await bankingService.checkPin(account_number, pin))) {
     throw errorResponder(errorTypes.INVALID_CREDENTIALS, 'Wrong pin');
@@ -125,12 +147,19 @@ async function cashOut(request, response, next) {
   }
 }
 
+/**
+ * Handle transfer to account for other account from request
+ * @param {object} request - Express request object
+ * @param {object} response - Express response object
+ * @param {object} next - Express route middlewares
+ * @returns {object} Response object or pass an error to the next route
+ */
 async function transferTo(request, response, next) {
   const account_number = parseInt(request.body.account_number);
   const recipient_account = parseInt(request.body.recipient_account);
   const amount = parseInt(request.body.amount);
   const pin = parseInt(request.body.pin);
-  const balance = bankingService.getBalance(account_number);
+  const balance = await bankingService.getBalance(account_number);
 
   if (!(await bankingService.checkPin(account_number, pin))) {
     throw errorResponder(errorTypes.INVALID_CREDENTIALS, 'Wrong pin');
@@ -167,6 +196,14 @@ async function transferTo(request, response, next) {
     return next(error);
   }
 }
+
+/**
+ * Handle get list of mutation from request
+ * @param {object} request - Express request object
+ * @param {object} response - Express response object
+ * @param {object} next - Express route middlewares
+ * @returns {object} Response object or pass an error to the next route
+ */
 async function getMutation(request, response, next) {
   const account_number = parseInt(request.params.account_number);
   try {
@@ -179,6 +216,36 @@ async function getMutation(request, response, next) {
   }
 }
 
+/**
+ * Handle delete mutation of an account from request
+ * @param {object} request - Express request object
+ * @param {object} response - Express response object
+ * @param {object} next - Express route middlewares
+ * @returns {object} Response object or pass an error to the next route
+ */
+async function deleteMutation(request, response, next) {
+  const account_number = parseInt(request.body.account_number);
+
+  const pin = parseInt(request.body.pin);
+
+  if (!(await bankingService.checkPin(account_number, pin))) {
+    throw errorResponder(errorTypes.INVALID_CREDENTIALS, 'Wrong pin');
+  }
+  try {
+    await bankingService.deleteMutation(account_number);
+    return response.status(200).json("Mutation has been deleted");
+  } catch (error) {
+    return next(error);
+  }
+}
+
+/**
+ * Handle change pin of an account from request
+ * @param {object} request - Express request object
+ * @param {object} response - Express response object
+ * @param {object} next - Express route middlewares
+ * @returns {object} Response object or pass an error to the next route
+ */
 async function changePin(request, response, next) {
   const account_number = parseInt(request.body.account_number);
   const pin = parseInt(request.body.pin);
@@ -196,29 +263,33 @@ async function changePin(request, response, next) {
     );
   }
   try {
-    const all_mutation =
-      await bankingService.getMutationByAccountNumber(account_number);
-    //console.log(all_mutation);
-    return response.status(200).json({ account_number, new_pin });
+    await bankingService.changePin(account_number, new_pin);
+    return response.status(200).json('Pin has been changed');
   } catch (error) {
     return next(error);
   }
 }
-// async function getBalance(request, response, next) {
-//   const account_number = await parseInt(request.body.account_number);
-//   const pin = await parseInt(request.body.pin);
 
-//   if (!(await bankingService.checkPin(account_number, pin))) {
-//     throw errorResponder(errorTypes.INVALID_CREDENTIALS, 'Wrong pin');
-//   }
-
-//   try {
-//     const balance = await bankingService.getBalance(account_number);
-//     return response.status(200).json({ account_number, balance });
-//   } catch (error) {
-//     return next(error);
-//   }
-// }
+/**
+ * Handle delete account from request
+ * @param {object} request - Express request object
+ * @param {object} response - Express response object
+ * @param {object} next - Express route middlewares
+ * @returns {object} Response object or pass an error to the next route
+ */
+async function deleteAccount(request, response, next) {
+  const account_number = parseInt(request.body.account_number);
+  const pin = parseInt(request.body.pin);
+  if (!(await bankingService.checkPin(account_number, pin))) {
+    throw errorResponder(errorTypes.INVALID_CREDENTIALS, 'Wrong pin');
+  }
+  try {
+    await bankingService.deleteAccount(account_number);
+    return response.status(200).json('Account has been deleted');
+  } catch (error) {
+    return next(error);
+  }
+}
 
 module.exports = {
   //createAccount,
@@ -227,5 +298,7 @@ module.exports = {
   cashOut,
   transferTo,
   getMutation,
+  deleteMutation,
   changePin,
+  deleteAccount,
 };

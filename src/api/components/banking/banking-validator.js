@@ -1,5 +1,6 @@
 const joi = require('joi');
 const { joiPasswordExtendCore } = require('joi-password');
+const { account_number } = require('../../../models/accounts-schema');
 
 module.exports = {
   // createAccount: {
@@ -63,6 +64,19 @@ module.exports = {
         .required()
         .label('Account number'),
       amount: joi.number().required().label('Amount'),
+      pin: joi.number().min(100000).max(999999).required().label('Pin'),
+    },
+  },
+
+  deleteMutation: {
+    body: {
+      account_number: joi
+        .number()
+        .min(150000000000)
+        .max(150999999999)
+        .required()
+        .label('Account number'),
+
       pin: joi.number().min(100000).max(999999).required().label('Pin'),
     },
   },

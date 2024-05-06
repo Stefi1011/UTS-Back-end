@@ -63,40 +63,18 @@ module.exports = (app) => {
     celebrate(bankingValidator.changePin),
     bankingControllers.changePin
   );
+
   // Delete Mutation
-  // route.get(
-  //   '/check/mutation/:account_number',
-  //   authenticationMiddleware,
-  //   bankingControllers.deleteMutation
-  // );
-
-  // // // Create Passcode
-  // // route.post(
-  // //   '/passcode',
-  // //   authenticationMiddleware,
-  // //   celebrate(bankingValidator.createPasscode),
-  // //   bankingControllers.createPasscode
-  // // );
-
-  // // Check Mutation
-  // route.get(
-  //   '/mutation',
-  //   authenticationMiddleware,
-  //   bankingControllers.getMutation
-  // );
-
-  // // Change Passcode
-  // route.post(
-  //   '/passcode',
-  //   authenticationMiddleware,
-  //   celebrate(bankingValidator.changePasscode),
-  //   bankingControllers.changePasscode
-  // );
-
-  // // Delete account
-  // route.delete(
-  //   '/:id',
-  //   authenticationMiddleware,
-  //   bankingControllers.deleteAccount
-  // );
+  route.patch(
+    '/delete-mutation',
+    authenticationMiddleware,
+    celebrate(bankingValidator.deleteMutation),
+    bankingControllers.deleteMutation
+  );
+  
+  route.delete(
+    '/delete-account',
+    authenticationMiddleware,
+    bankingControllers.deleteAccount
+  );
 };
