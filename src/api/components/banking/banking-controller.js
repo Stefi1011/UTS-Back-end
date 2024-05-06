@@ -1,56 +1,6 @@
 const bankingService = require('./banking-service');
 const { errorResponder, errorTypes } = require('../../../core/errors');
 
-// async function createAccount(request, response, next) {
-//   try {
-//     const {
-//       full_name,
-//       email,
-//       pin
-//     } = request.body;
-//     const account_number = await bankingService.generateAccountNumber();
-
-//     // Check confirmation password
-//     if (password !== password_confirm) {
-//       throw errorResponder(
-//         errorTypes.INVALID_PASSWORD,
-//         'Password confirmation mismatched'
-//       );
-//     }
-
-//     // Email must be unique
-//     const emailIsRegistered = await bankingService.emailIsRegistered(email);
-//     if (emailIsRegistered) {
-//       throw errorResponder(
-//         errorTypes.EMAIL_ALREADY_TAKEN,
-//         'Email is already registered'
-//       );
-//     }
-
-//     const success = await bankingService.createAccount(
-//       account_number,
-//       full_name,
-//       email,
-//       phone_number,
-//       birth_place,
-//       birth_date,
-//       address,
-//       balance,
-//       password
-//     );
-//     if (!success) {
-//       throw errorResponder(
-//         errorTypes.UNPROCESSABLE_ENTITY,
-//         'Failed to create user'
-//       );
-//     }
-
-//     return response.status(200).json({ full_name, email });
-//   } catch (error) {
-//     return next(error);
-//   }
-// }
-
 /**
  * Handle get balance of account from request
  * @param {object} request - Express request object
@@ -233,7 +183,7 @@ async function deleteMutation(request, response, next) {
   }
   try {
     await bankingService.deleteMutation(account_number);
-    return response.status(200).json("Mutation has been deleted");
+    return response.status(200).json('Mutation has been deleted');
   } catch (error) {
     return next(error);
   }
